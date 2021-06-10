@@ -515,3 +515,57 @@ class Taxonomy(WordPressModel):
 
     #def term(self):
     #    return self._get_object(Term, self.term_id)
+
+
+class WpWoocommerceOrderItems(models.Model):
+    id = models.IntegerField(db_column='order_item_id', primary_key=True)
+    order_item_name = models.TextField()
+    order_item_type = models.CharField(max_length=200)
+    order = models.ForeignKey(
+        Post,
+        related_name='order_items',
+        # db_column='order_id',
+        on_delete=models.PROTECT,
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'wp_woocommerce_order_items'
+
+
+class WpWoocommerceOrderItemmeta(models.Model):
+    id = models.IntegerField(db_column='meta_id', primary_key=True)
+    order_item = models.ForeignKey(
+        WpWoocommerceOrderItems,
+        blank=True,
+        null=True,
+        related_name='meta',
+        # db_column='order_item_id',
+        on_delete=models.PROTECT,
+    )
+    key = models.CharField(max_length=255, blank=True, null=True, db_column='meta_key')
+    value = models.TextField(blank=True, null=True, db_column='meta_value')
+
+    class Meta:
+        managed = False
+        db_table = 'wp_woocommerce_order_itemmeta'
+
+
+class WpWoocommerceTaxRates(models.Model):
+    id = models.BigAutoField(primary_key=True, db_column='tax_rate_id')
+    tax_rate_country = models.CharField(max_length=2)
+    tax_rate_state = models.CharField(max_length=200)
+    tax_rate = models.CharField(max_length=8)
+    tax_rate_name = models.CharField(max_length=200)
+    tax_rate_priority = models.BigIntegerField()
+    tax_rate_compound = models.IntegerField()
+    tax_rate_shipping = models.IntegerField()
+    tax_rate_order = models.BigIntegerField()
+    tax_rate_class = models.CharField(max_length=200)
+
+    class Meta:
+        managed = False
+        db_table = 'wp_woocommerce_tax_rates'
+
+    def __str__(self):
+        return f'{self.tax_rate_country} {self.tax_rate_name} {self.tax_rate}'
