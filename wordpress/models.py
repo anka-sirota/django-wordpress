@@ -297,8 +297,8 @@ class Post(WordPressModel):
 #    category_id = models.IntegerField(db_column='post_category')
 
     # other various lame fields
-    parent_id = models.IntegerField(default=0, db_column="post_parent")
-    # parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True, on_delete=models.PROTECT)
+    # parent_id = models.IntegerField(default=0, db_column="post_parent")
+    parent = models.ForeignKey('self', db_column="post_parent", blank=True, null=True, on_delete=models.PROTECT)
     menu_order = models.IntegerField(default=0)
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
 
@@ -315,6 +315,9 @@ class Post(WordPressModel):
 
     def __unicode__(self):
         return self.title
+
+    def __str__(self):
+        return f'{self.post_type}#{self.pk} "{self.title}"'
 
     def save(self, **kwargs):
         if self.parent_id is None:
@@ -360,7 +363,7 @@ class Post(WordPressModel):
         return self.term_cache.get(taxonomy)
 
     # properties
-
+    '''
     @property
     def children(self):
         return self._get_children()
@@ -375,6 +378,7 @@ class Post(WordPressModel):
         if post.pk is None:
             raise ValueError('parent post must have an ID')
         self.parent_id = post.pk
+    '''
 
     # related objects
 
@@ -411,6 +415,7 @@ class PostMeta(WordPressModel):
     class Meta:
         db_table = '%s_postmeta' % TABLE_PREFIX
         managed = False
+        ordering = ['-id', 'key']
 
     def __unicode__(self):
         return u"%s: %s" % (self.key, self.value)
@@ -450,6 +455,9 @@ class Comment(WordPressModel):
 
     def __unicode__(self):
         return u"%s on %s" % (self.author_name, self.post.title)
+
+    def __str__(self):
+        return f'{self.post_date} {self.comment_type} {self.content}'
 
     def get_absolute_url(self):
         return "%s#comment-%i" % (self.post.get_absolute_url(), self.pk)
@@ -568,4 +576,4 @@ class WpWoocommerceTaxRates(models.Model):
         db_table = 'wp_woocommerce_tax_rates'
 
     def __str__(self):
-        return f'{self.tax_rate_country} {self.tax_rate_name} {self.tax_rate}'
+        return f'{self.tax_rate_country} {self.tax_rate_name} {self.tax_rate} {self.tax_rate_class}'
